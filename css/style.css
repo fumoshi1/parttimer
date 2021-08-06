@@ -1,0 +1,8 @@
+table, th, td {
+	border: 1px solid black;
+}
+
+table td {
+	width: 200px;
+	text-align: center;
+}
