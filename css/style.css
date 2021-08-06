@@ -6,3 +6,7 @@ table td {
 	width: 200px;
 	text-align: center;
 }
+
+table tr.behind {
+	background-color: #ffc0c0;
+}

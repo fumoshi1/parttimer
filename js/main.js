@@ -1,3 +1,5 @@
+var ratios = [20, 80];
+
 function reset() {
 	localforage.setItem("timerStatus", null);
 };
@@ -10,12 +12,12 @@ function add(a,b){
 	return a+b;
 };
 
-function computeTimerTotalSeconds(timer) {
+function computeTimerTotalMilliseconds(timer) {
 	if (!timer) {
 		return 0;
 	}
 
-	return timer.intervals
+	return timer.base + timer.intervals
 		.map(getTotal)
 		.reduce(add, 0);
 };
@@ -45,27 +47,37 @@ function forEachTimer(f) {
 
 function updateTimers() {
 	localforage.getItem("timerStatus").then(function(timerStatus) {
+		var minMilliSeconds = Infinity;
+		var minTimer = -1;
 		forEachTimer(function(i) {
-			var totalSeconds;
+			var totalMilliSeconds;
 			if (!timerStatus) {
-				totalSeconds = 0;
+				totalMilliSeconds = 0;
 			} else {
-				totalSeconds = computeTimerTotalSeconds(timerStatus[i]);
+				totalMilliSeconds = computeTimerTotalMilliseconds(timerStatus[i]);
 			}
 
-			$("#timer" + i + " .display").text(secondsToHour(totalSeconds));
+			if (totalMilliSeconds / ratios[i] < minMilliSeconds) {
+				minTimer = i;
+				minMilliSeconds = totalMilliSeconds / ratios[i];
+			}
+
+			$("#timer" + i + " .display").text(secondsToHour(totalMilliSeconds));
 
 			var running = timerStatus &&
 				timerStatus[i] &&
 				timerStatus[i].intervals[0] &&
 				!timerStatus[i].intervals.slice(-1)[0].end;
 
+			$("#timer" + i).removeClass("behind");
   			if (running) {
   				$("#timer" + i + " button").text("STOP");
   			} else {
   				$("#timer" + i + " button").text("START/CONTINUE");
   			}
 		});
+
+		$("#timer" + minTimer).addClass("behind");
 	});
 };
 
