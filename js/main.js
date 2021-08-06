@@ -1,4 +1,4 @@
-var ratios = [20, 80];
+var ratios = [50, 50];
 
 function reset() {
 	localforage.setItem("timerStatus", null);
@@ -84,6 +84,7 @@ function updateTimers() {
 $.when( $.ready ).then(function() {
   // Document is ready.
   forEachTimer(function(i) {
+  	$("#timer" + i + " .ratio").text(ratios[i] + "%");
   	$("#timer" + i + " button").click(function() {
   		localforage.getItem("timerStatus").then(function(timerStatus) {
   			if (!timerStatus) {
@@ -106,10 +107,16 @@ $.when( $.ready ).then(function() {
   			if (running) {
 				timerStatus[i].intervals.slice(-1)[0].end = now;
   				$("#timer" + i + " button").text("START/CONTINUE");
+
+	  			timerStatus[i] = {
+	  				base: computeTimerTotalMilliseconds(timerStatus[i]),
+	  				intervals: []
+	  			};
   			} else {
   				timerStatus[i].intervals.push({start: now});
   				$("#timer" + i + " button").text("STOP");
   			}
+
 
   			localforage.setItem("timerStatus", timerStatus);
   		});
