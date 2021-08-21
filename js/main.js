@@ -1,4 +1,4 @@
-var ratios = [50, 50];
+var ratios = [25, 25, 50];
 
 function reset() {
 	localforage.setItem("timerStatus", null);
@@ -40,7 +40,7 @@ function secondsToHour(milliseconds) {
 };
 
 function forEachTimer(f) {
-	for (var i=0; i<2; i++) {
+	for (var i=0; i<ratios.length; i++) {
 		f(i)
 	}
 };
