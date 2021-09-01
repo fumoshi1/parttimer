@@ -8,5 +8,18 @@ table td {
 }
 
 table tr.behind {
-	background-color: #ffc0c0;
+	animation-duration: 200ms;
+	animation-name: blink;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+
 }
+
+@keyframes blink {
+   from {
+	  background-color: #ffc0c0;
+   }
+   to {
+	  background-color: none;
+   }
+ }
