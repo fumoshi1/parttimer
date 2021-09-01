@@ -57,7 +57,7 @@ function updateTimers() {
 				totalMilliSeconds = computeTimerTotalMilliseconds(timerStatus[i]);
 			}
 
-			if (totalMilliSeconds / ratios[i] < minMilliSeconds) {
+			if ((!currentTimerStatus[i].locked) && totalMilliSeconds / ratios[i] < minMilliSeconds) {
 				minTimer = i;
 				minMilliSeconds = totalMilliSeconds / ratios[i];
 			}
@@ -81,8 +81,30 @@ function updateTimers() {
 	});
 };
 
+var currentTimerStatus;
 $.when( $.ready ).then(function() {
   // Document is ready.
+
+  localforage.getItem("timerStatus").then(function(timerStatus) {
+  	currentTimerStatus = timerStatus;
+	forEachTimer(function(i) {
+  		var checked = timerStatus[i].locked ? '1' : 'false';
+
+  		if (timerStatus[i].locked) {
+ 			$("#timer" + i + " input[type=checkbox]").attr("checked", true);
+ 		} else {
+ 			$("#timer" + i + " input[type=checkbox]").removeAttr("checked");
+ 		}
+
+ 		$("#timer" + i + " input[type=checkbox]").click(function(event) {
+ 			timerStatus[i].locked = event.currentTarget.checked;
+ 			currentTimerStatus = timerStatus;
+ 			
+ 			localforage.setItem("timerStatus", timerStatus);
+ 		});
+	});
+  });
+
   forEachTimer(function(i) {
   	$("#timer" + i + " .ratio").text(ratios[i] + "%");
   	$("#timer" + i + " button").click(function() {
