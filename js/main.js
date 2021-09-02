@@ -97,10 +97,12 @@ $.when( $.ready ).then(function() {
  		}
 
  		$("#timer" + i + " input[type=checkbox]").click(function(event) {
- 			timerStatus[i].locked = event.currentTarget.checked;
- 			currentTimerStatus = timerStatus;
- 			
- 			localforage.setItem("timerStatus", timerStatus);
+ 			currentTimerStatus[i].locked = event.currentTarget.checked;
+
+ 			localforage.getItem("timerStatus").then(function(ts) {
+ 				ts[i].locked = event.currentTarget.checked;
+	 			localforage.setItem("timerStatus", ts);
+ 			});
  		});
 	});
   });
