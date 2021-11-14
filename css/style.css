@@ -2,6 +2,14 @@ table, th, td {
 	border: 1px solid black;
 }
 
+table th.label {
+	width: 500px;
+}
+
+table input[type="text"] {
+	width: 100%;
+}
+
 table td {
 	width: 200px;
 	text-align: center;

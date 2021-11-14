@@ -12,12 +12,17 @@ function add(a,b){
 	return a+b;
 };
 
+function enabled(interval) {
+	return !interval.disabled;
+};
+
 function computeTimerTotalMilliseconds(timer) {
 	if (!timer) {
 		return 0;
 	}
 
 	return timer.base + timer.intervals
+		.filter(enabled)
 		.map(getTotal)
 		.reduce(add, 0);
 };
@@ -47,6 +52,10 @@ function forEachTimer(f) {
 
 function updateTimers() {
 	localforage.getItem("timerStatus").then(function(timerStatus) {
+		if (!timerStatus) {
+			timerStatus = [];
+		}
+
 		var minMilliSeconds = Infinity;
 		var minTimer = -1;
 		forEachTimer(function(i) {
@@ -57,7 +66,7 @@ function updateTimers() {
 				totalMilliSeconds = computeTimerTotalMilliseconds(timerStatus[i]);
 			}
 
-			if (currentTimerStatus[i] && (!currentTimerStatus[i].locked) && totalMilliSeconds / ratios[i] < minMilliSeconds) {
+			if (timerStatus[i] && (!timerStatus[i].locked) && totalMilliSeconds / ratios[i] < minMilliSeconds) {
 				minTimer = i;
 				minMilliSeconds = totalMilliSeconds / ratios[i];
 			}
@@ -71,6 +80,7 @@ function updateTimers() {
 
 			$("#timer" + i).removeClass("behind");
   			if (running) {
+  				// update production timer table
   				$("#timer" + i + " button").text("STOP");
   			} else {
   				$("#timer" + i + " button").text("START/CONTINUE");
@@ -81,11 +91,40 @@ function updateTimers() {
 	});
 };
 
+var escape = document.createElement('textarea');
+function escapeHTML(html) {
+    escape.textContent = html;
+    return escape.innerHTML;
+}
+
+function updateTimerList(timerStatus) {
+	var tbody = $("#productionlist tbody")
+	tbody.empty();
+
+	timerStatus[2].intervals.forEach(function(interval, index) {
+	  	var d = new Date(interval.start);
+	  	var a = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+	  	var b = secondsToHour(interval.end - interval.start);
+	  	var c = '<input type="text" value="' + escapeHTML(interval.label) + '" index='+index+'></input>';
+	  	tbody.prepend("<tr><td>"+a+"</td><td>"+b+"</td><td>"+c+"</td></tr>")
+	});
+
+	$(tbody).find("input").change(function(e) {
+		var attributes = e.currentTarget.attributes;
+		var index = parseInt(attributes.index.value);
+		localforage.getItem("timerStatus").then(function(timerStatus) {
+			timerStatus[2].intervals[index].label = e.currentTarget.value;
+			localforage.setItem("timerStatus", timerStatus);
+		});
+	});
+};
+
 var currentTimerStatus;
 $.when( $.ready ).then(function() {
   // Document is ready.
 
   localforage.getItem("timerStatus").then(function(timerStatus) {
+  	updateTimerList(timerStatus);
     currentTimerStatus = timerStatus || ratios.map(function() { return {}; });
 	forEachTimer(function(i) {
   		var checked = timerStatus[i] && timerStatus[i].locked ? '1' : 'false';
@@ -134,10 +173,19 @@ $.when( $.ready ).then(function() {
 				timerStatus[i].intervals.slice(-1)[0].end = now;
   				$("#timer" + i + " button").text("START/CONTINUE");
 
+  				// disable intervals
 	  			timerStatus[i] = {
 	  				base: computeTimerTotalMilliseconds(timerStatus[i]),
-	  				intervals: []
+	  				intervals: timerStatus[i].intervals.slice(-32)
 	  			};
+
+	  			timerStatus[i].intervals.forEach(function(interval) {
+	  				interval.disabled = true;
+	  			});
+
+	  			if (i == 2) {
+		  			updateTimerList(timerStatus);
+		  		}
   			} else {
   				timerStatus[i].intervals.push({start: now});
   				$("#timer" + i + " button").text("STOP");
