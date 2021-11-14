@@ -57,7 +57,7 @@ function updateTimers() {
 				totalMilliSeconds = computeTimerTotalMilliseconds(timerStatus[i]);
 			}
 
-			if ((!currentTimerStatus[i].locked) && totalMilliSeconds / ratios[i] < minMilliSeconds) {
+			if (currentTimerStatus[i] && (!currentTimerStatus[i].locked) && totalMilliSeconds / ratios[i] < minMilliSeconds) {
 				minTimer = i;
 				minMilliSeconds = totalMilliSeconds / ratios[i];
 			}
@@ -86,20 +86,22 @@ $.when( $.ready ).then(function() {
   // Document is ready.
 
   localforage.getItem("timerStatus").then(function(timerStatus) {
-  	currentTimerStatus = timerStatus;
+    currentTimerStatus = timerStatus || ratios.map(function() { return {}; });
 	forEachTimer(function(i) {
-  		var checked = timerStatus[i].locked ? '1' : 'false';
+  		var checked = timerStatus[i] && timerStatus[i].locked ? '1' : 'false';
 
-  		if (timerStatus[i].locked) {
+  		if (timerStatus[i] && timerStatus[i].locked) {
  			$("#timer" + i + " input[type=checkbox]").attr("checked", true);
  		} else {
  			$("#timer" + i + " input[type=checkbox]").removeAttr("checked");
  		}
 
  		$("#timer" + i + " input[type=checkbox]").click(function(event) {
+ 			currentTimerStatus[i] = currentTimerStatus[i] || {};
  			currentTimerStatus[i].locked = event.currentTarget.checked;
 
  			localforage.getItem("timerStatus").then(function(ts) {
+ 				ts[i] = ts[i] || {};
  				ts[i].locked = event.currentTarget.checked;
 	 			localforage.setItem("timerStatus", ts);
  			});
