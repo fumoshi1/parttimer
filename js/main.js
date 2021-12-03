@@ -1,4 +1,4 @@
-var ratios = [25, 25, 50];
+var ratios = [15, 35, 50];
 
 function reset() {
 	localforage.setItem("timerStatus", null);
