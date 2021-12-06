@@ -128,22 +128,24 @@ function updateTimerList(timerStatus) {
 	var tbody = $("#productionlist tbody")
 	tbody.empty();
 
-	timerStatus[2].intervals.forEach(function(interval, index) {
-	  	var d = new Date(interval.start);
-	  	var a = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-	  	var b = secondsToHour(interval.end - interval.start);
-	  	var c = '<input type="text" value="' + escapeHTML(interval.label) + '" index='+index+'></input>';
-	  	tbody.prepend("<tr><td>"+a+"</td><td>"+b+"</td><td>"+c+"</td></tr>")
-	});
-
-	$(tbody).find("input").change(function(e) {
-		var attributes = e.currentTarget.attributes;
-		var index = parseInt(attributes.index.value);
-		localforage.getItem("timerStatus").then(function(timerStatus) {
-			timerStatus[2].intervals[index].label = e.currentTarget.value;
-			localforage.setItem("timerStatus", timerStatus);
+	if (timerStatus && timerStatus[2]) {
+		timerStatus[2].intervals.forEach(function(interval, index) {
+		  	var d = new Date(interval.start);
+		  	var a = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+		  	var b = secondsToHour(interval.end - interval.start);
+		  	var c = '<input type="text" value="' + escapeHTML(interval.label) + '" index='+index+'></input>';
+		  	tbody.prepend("<tr><td>"+a+"</td><td>"+b+"</td><td>"+c+"</td></tr>")
 		});
-	});
+
+		$(tbody).find("input").change(function(e) {
+			var attributes = e.currentTarget.attributes;
+			var index = parseInt(attributes.index.value);
+			localforage.getItem("timerStatus").then(function(timerStatus) {
+				timerStatus[2].intervals[index].label = e.currentTarget.value;
+				localforage.setItem("timerStatus", timerStatus);
+			});
+		});
+	}
 };
 
 var currentTimerStatus;
@@ -151,6 +153,10 @@ $.when( $.ready ).then(function() {
   // Document is ready.
 
   localforage.getItem("timerStatus").then(function(timerStatus) {
+  	if (!timerStatus) {
+  		return;
+  	}
+
   	updateTimerList(timerStatus);
     currentTimerStatus = timerStatus || ratios.map(function() { return {}; });
 	forEachTimer(function(i) {
