@@ -89,30 +89,38 @@ function updateTimers() {
 		});
 
 		$("#timer" + minTimer).addClass("behind");
-		var secondMinTimer = -1;
-		var secondMinMilliSeconds = Infinity;
-		forEachTimer(function(i) {
-			if (i !== minTimer) {
-				if (!timerStatus) {
-					totalMilliSeconds = 0;
-				} else {
-					totalMilliSeconds = computeTimerTotalMilliseconds(timerStatus[i]);
-				}
 
-				if (timerStatus[i] && (!timerStatus[i].locked) && totalMilliSeconds / ratios[i] < secondMinMilliSeconds) {
-					secondMinTimer = i;
-					secondMinMilliSeconds = totalMilliSeconds / ratios[i];
-				}
+		if (timerStatus[minTimer].running) {
 
-				$("#timer" + i + " .display-remaining").text("-");
+			var secondMinTimer = -1;
+			var secondMinMilliSeconds = Infinity;
+			forEachTimer(function(i) {
+				if (i !== minTimer) {
+					if (!timerStatus) {
+						totalMilliSeconds = 0;
+					} else {
+						totalMilliSeconds = computeTimerTotalMilliseconds(timerStatus[i]);
+					}
+
+					if (timerStatus[i] && (!timerStatus[i].locked) && totalMilliSeconds / ratios[i] < secondMinMilliSeconds) {
+						secondMinTimer = i;
+						secondMinMilliSeconds = totalMilliSeconds / ratios[i];
+					}
+
+					$("#timer" + i + " .display-remaining").text("-");
+				}
+			});
+
+			if (secondMinTimer !== -1) {
+				//var remaining = minMilliSeconds / ratios[minTimer] - secondMinMilliSeconds / ratios[secondMinTimer];
+				//remaining = remaining * ratios[minTimer];
+				var remaining = (secondMinMilliSeconds - minMilliSeconds) * ratios[minTimer];
+				$("#timer" + minTimer + " .display-remaining").text(secondsToHour(remaining));
 			}
-		});
-
-		if (secondMinTimer !== -1) {
-			//var remaining = minMilliSeconds / ratios[minTimer] - secondMinMilliSeconds / ratios[secondMinTimer];
-			//remaining = remaining * ratios[minTimer];
-			var remaining = (secondMinMilliSeconds - minMilliSeconds) * ratios[minTimer];
-			$("#timer" + minTimer + " .display-remaining").text(secondsToHour(remaining));
+		} else {
+			forEachTimer(function(i) {
+				$("#timer" + i + " .display-remaining").text("-");
+			});
 		}
 
 	});
