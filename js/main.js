@@ -90,8 +90,6 @@ function updateTimers() {
 
 		$("#timer" + minTimer).addClass("behind");
 
-		if (timerStatus[minTimer].running) {
-
 			var secondMinTimer = -1;
 			var secondMinMilliSeconds = Infinity;
 			forEachTimer(function(i) {
@@ -117,11 +115,6 @@ function updateTimers() {
 				var remaining = (secondMinMilliSeconds - minMilliSeconds) * ratios[minTimer];
 				$("#timer" + minTimer + " .display-remaining").text(secondsToHour(remaining));
 			}
-		} else {
-			forEachTimer(function(i) {
-				$("#timer" + i + " .display-remaining").text("-");
-			});
-		}
 
 	});
 };
